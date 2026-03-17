@@ -14,7 +14,9 @@
 
 #ifndef _MSC_VER
 #include <stdint.h>
+#ifndef SIZE_T_MAX
 #define SIZE_T_MAX SIZE_MAX
+#endif
 #endif
 
 // Globals ---------------------------------------------------------------------
