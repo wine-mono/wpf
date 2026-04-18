@@ -1,0 +1,44 @@
+import "wtypes.idl";
+import "unknwn.idl";
+import "oaidl.idl";
+
+cpp_quote("DEFINE_GUID(CLSID_ITextChunk, 0x89ea5b5a,0xd01c,0x4560,0xa8,0x74,0x9f,0xc9,0x2a,0xfb,0x0e,0xfa);")
+
+interface ISentence;
+interface ITextContext;
+
+[
+	object,
+	uuid(549f997e-0ec3-43d4-b443-2bf8021010cf)
+]
+interface ITextChunk : IUnknown
+{
+	HRESULT stub_get_InputText();
+	HRESULT stub_put_InputText();
+	HRESULT SetInputArray([in] LPCWSTR str, [in] long size);
+	HRESULT stub_RegisterEngine();
+	HRESULT stub_UnregisterEngine();
+	HRESULT stub_get_InputArray();
+	HRESULT stub_get_InputArrayRange();
+	HRESULT stub_put_InputArrayRange();
+	[propget] HRESULT Count([out, retval] long *val);
+	[propget] HRESULT Item([in] long index, [out, retval] ISentence **pval);
+	HRESULT stub_get__NewEnum();
+	[propget] HRESULT Sentences([out, retval] IEnumVARIANT **pval);
+	HRESULT stub_get_PropertyCount();
+	HRESULT stub_get_Property();
+	HRESULT stub_put_Property();
+	[propget] HRESULT Context([out, retval] ITextContext **pval);
+	[propput] HRESULT Context([in] ITextContext *val);
+	HRESULT stub_get_Locale();
+	[propput] HRESULT Locale([in] LCID val);
+	HRESULT stub_get_IsLocaleReliable();
+	HRESULT stub_put_IsLocaleReliable();
+	HRESULT stub_get_IsEndOfDocument();
+	HRESULT stub_put_IsEndOfDocument();
+	HRESULT GetEnumerator([retval, out] IEnumVARIANT **ppSent);
+	HRESULT stub_ToString();
+	HRESULT stub_ProcessStream();
+	[propget] HRESULT ReuseObjects([retval, out] VARIANT_BOOL *pval);
+	[propput] HRESULT ReuseObjects([in] VARIANT_BOOL val);
+}

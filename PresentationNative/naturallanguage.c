@@ -1,6 +1,10 @@
+#define COBJMACROS
 #include <windows.h>
 
 #include "wine/debug.h"
+
+#include <initguid.h>
+#include "naturallanguage.h"
 
 WINE_DEFAULT_DEBUG_CHANNEL(nlg);
 
@@ -13,8 +17,180 @@ void NlUnload(void)
 {
 }
 
+// ITextChunk
+typedef struct TextChunk {
+	ITextChunk ITextChunk_iface;
+	LONG ref;
+} TextChunk;
+
+static inline TextChunk *impl_from_ITextChunk(ITextChunk *iface)
+{
+	return CONTAINING_RECORD(iface, TextChunk, ITextChunk_iface);
+}
+
+static HRESULT WINAPI TextChunk_QueryInterface(ITextChunk *iface, REFIID iid, void** ppv)
+{
+	TextChunk *This = impl_from_ITextChunk(iface);
+	WINE_TRACE("(%p,%s,%p)\n", iface, debugstr_guid(iid), ppv);
+
+	if (IsEqualIID(&IID_IUnknown, iid) ||
+		IsEqualIID(&IID_ITextChunk, iid))
+	{
+		*ppv = &This->ITextChunk_iface;
+	}
+	else
+	{
+		*ppv = NULL;
+		return E_NOINTERFACE;
+	}
+	IUnknown_AddRef((IUnknown*)*ppv);
+	return S_OK;
+}
+
+static ULONG WINAPI TextChunk_AddRef(ITextChunk *iface)
+{
+	TextChunk *This = impl_from_ITextChunk(iface);
+	ULONG ref = InterlockedIncrement(&This->ref);
+
+	WINE_TRACE("(%p) refcount=%lu\n", iface, ref);
+
+	return ref;
+}
+
+static ULONG WINAPI TextChunk_Release(ITextChunk *iface)
+{
+	TextChunk *This = impl_from_ITextChunk(iface);
+	ULONG ref = InterlockedDecrement(&This->ref);
+
+	WINE_TRACE("(%p) refcount=%lu\n", iface, ref);
+
+	if (ref == 0)
+		free(This);
+
+	return ref;
+}
+
+static HRESULT WINAPI TextChunk_ComStub(ITextChunk *This)
+{
+	// Should never be called
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextChunk_SetInputArray(ITextChunk *iface, LPCWSTR str, LONG size)
+{
+	WINE_FIXME("(%p,%s,%li)\n", iface, debugstr_w(str), size);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextChunk_get_Count(ITextChunk *iface, LONG *val)
+{
+	WINE_FIXME("(%p,%p)\n", iface, val);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextChunk_get_Item(ITextChunk *iface, LONG index, ISentence **pval)
+{
+	WINE_FIXME("(%p,%ld,%p)\n", iface, index, pval);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextChunk_get_Sentences(ITextChunk *iface, IEnumVARIANT **val)
+{
+	WINE_FIXME("(%p,%p)\n", iface, val);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextChunk_get_Context(ITextChunk *iface, ITextContext **pval)
+{
+	WINE_FIXME("(%p,%p)\n", iface, pval);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextChunk_put_Context(ITextChunk *iface, ITextContext *val)
+{
+	WINE_FIXME("(%p,%p)\n", iface, val);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextChunk_put_Locale(ITextChunk *iface, LCID val)
+{
+	WINE_FIXME("(%p,%lu)\n", iface, val);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextChunk_GetEnumerator(ITextChunk *iface, IEnumVARIANT **ppSent)
+{
+	WINE_FIXME("(%p,%p)\n", iface, ppSent);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextChunk_get_ReuseObjects(ITextChunk *iface, VARIANT_BOOL *pval)
+{
+	WINE_FIXME("(%p,%p)\n", iface, pval);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextChunk_put_ReuseObjects(ITextChunk *iface, VARIANT_BOOL val)
+{
+	WINE_FIXME("(%p,%lu)\n", iface, val);
+	return E_NOTIMPL;
+}
+
+static const ITextChunkVtbl TextChunk_Vtbl = {
+	TextChunk_QueryInterface,
+	TextChunk_AddRef,
+	TextChunk_Release,
+	TextChunk_ComStub,
+	TextChunk_ComStub,
+	TextChunk_SetInputArray,
+	TextChunk_ComStub,
+	TextChunk_ComStub,
+	TextChunk_ComStub,
+	TextChunk_ComStub,
+	TextChunk_ComStub,
+	TextChunk_get_Count,
+	TextChunk_get_Item,
+	TextChunk_ComStub,
+	TextChunk_get_Sentences,
+	TextChunk_ComStub,
+	TextChunk_ComStub,
+	TextChunk_ComStub,
+	TextChunk_get_Context,
+	TextChunk_put_Context,
+	TextChunk_ComStub,
+	TextChunk_put_Locale,
+	TextChunk_ComStub,
+	TextChunk_ComStub,
+	TextChunk_ComStub,
+	TextChunk_ComStub,
+	TextChunk_GetEnumerator,
+	TextChunk_ComStub,
+	TextChunk_ComStub,
+	TextChunk_get_ReuseObjects,
+	TextChunk_put_ReuseObjects
+};
+
+static HRESULT TextChunk_Create(REFIID iid, void** ppv)
+{
+	TextChunk *This;
+	HRESULT res;
+
+	This = malloc(sizeof(*This));
+	if (!This) return E_OUTOFMEMORY;
+	This->ITextChunk_iface.lpVtbl = (ITextChunkVtbl*)&TextChunk_Vtbl;
+	This->ref = 1;
+
+	res = TextChunk_QueryInterface(&This->ITextChunk_iface, iid, ppv);
+	TextChunk_Release(&This->ITextChunk_iface);
+
+	return res;
+}
+
 HRESULT NlGetClassObject(REFCLSID clsid, REFIID iid, void** ppv)
 {
+	if (IsEqualGUID(&CLSID_ITextChunk, clsid)) {
+		return TextChunk_Create(iid, ppv);
+	}
 	WINE_FIXME("%s %s\n", wine_dbgstr_guid(clsid), wine_dbgstr_guid(iid));
 	return E_NOTIMPL;
 }
