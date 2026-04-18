@@ -1,4 +1,4 @@
-C_SRCS=wrappers.c classification.c loline.c loservice.c fspage.c
+C_SRCS=wrappers.c classification.c loline.c loservice.c naturallanguage.c fspage.c
 
 all: PresentationNative_cor3.dll
 .PHONY: all
@@ -10,6 +10,7 @@ classification.o: $(SRCDIR)/class_table.h
 fspage.o: $(SRCDIR)/fspage.h
 loline.o: $(SRCDIR)/loservice.h $(SRCDIR)/../wine/debug.h
 loservice.o: $(SRCDIR)/loservice.h
+naturallanguage.o: $(SRCDIR)/../wine/debug.h
 
 debug.o: $(SRCDIR)/../wine/debug.c $(SRCDIR)/../wine/debug.h $(SRCDIR)/../wine/heap.h
 	$(MINGW)-gcc -o $@ $(CFLAGS) -D_WIN32_WINNT=0x0602 -D__WINESRC__ --std=c99 -c -Wall -Wno-format -Werror -I$(SRCDIR)/.. $<
