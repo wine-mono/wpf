@@ -199,6 +199,7 @@ typedef struct TextChunk {
 	ITextChunk ITextChunk_iface;
 	LONG ref;
 	ITextContext *context;
+	VARIANT_BOOL reuse_objects;
 } TextChunk;
 
 static inline TextChunk *impl_from_ITextChunk(ITextChunk *iface)
@@ -323,14 +324,22 @@ static HRESULT WINAPI TextChunk_GetEnumerator(ITextChunk *iface, IEnumVARIANT **
 
 static HRESULT WINAPI TextChunk_get_ReuseObjects(ITextChunk *iface, VARIANT_BOOL *pval)
 {
-	WINE_FIXME("(%p,%p)\n", iface, pval);
-	return E_NOTIMPL;
+	TextChunk *This = impl_from_ITextChunk(iface);
+	WINE_TRACE("(%p,%p)\n", iface, pval);
+
+	*pval = This->reuse_objects;
+
+	return S_OK;
 }
 
 static HRESULT WINAPI TextChunk_put_ReuseObjects(ITextChunk *iface, VARIANT_BOOL val)
 {
-	WINE_FIXME("(%p,%lu)\n", iface, val);
-	return E_NOTIMPL;
+	TextChunk *This = impl_from_ITextChunk(iface);
+	WINE_TRACE("(%p,%lu)\n", iface, val);
+
+	This->reuse_objects = val ? VARIANT_TRUE : VARIANT_FALSE;
+
+	return S_OK;
 }
 
 static const ITextChunkVtbl TextChunk_Vtbl = {
@@ -377,6 +386,7 @@ static HRESULT TextChunk_Create(REFIID iid, void** ppv)
 	This->ITextChunk_iface.lpVtbl = (ITextChunkVtbl*)&TextChunk_Vtbl;
 	This->ref = 1;
 	This->context = NULL;
+	This->reuse_objects = VARIANT_FALSE;
 
 	res = TextChunk_QueryInterface(&This->ITextChunk_iface, iid, ppv);
 	TextChunk_Release(&This->ITextChunk_iface);
