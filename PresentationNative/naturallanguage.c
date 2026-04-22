@@ -198,6 +198,7 @@ static HRESULT TextContext_Create(REFIID iid, void** ppv)
 typedef struct TextChunk {
 	ITextChunk ITextChunk_iface;
 	LONG ref;
+	ITextContext *context;
 } TextChunk;
 
 static inline TextChunk *impl_from_ITextChunk(ITextChunk *iface)
@@ -242,7 +243,11 @@ static ULONG WINAPI TextChunk_Release(ITextChunk *iface)
 	WINE_TRACE("(%p) refcount=%lu\n", iface, ref);
 
 	if (ref == 0)
+	{
+		if (This->context)
+			ITextChunk_Release(This->context);
 		free(This);
+	}
 
 	return ref;
 }
@@ -279,14 +284,29 @@ static HRESULT WINAPI TextChunk_get_Sentences(ITextChunk *iface, IEnumVARIANT **
 
 static HRESULT WINAPI TextChunk_get_Context(ITextChunk *iface, ITextContext **pval)
 {
-	WINE_FIXME("(%p,%p)\n", iface, pval);
-	return E_NOTIMPL;
+	TextChunk *This = impl_from_ITextChunk(iface);
+
+	WINE_TRACE("(%p,%p)\n", iface, pval);
+
+	if (This->context)
+		ITextContext_AddRef(This->context);
+	*pval = This->context;
+	return S_OK;
 }
 
 static HRESULT WINAPI TextChunk_put_Context(ITextChunk *iface, ITextContext *val)
 {
-	WINE_FIXME("(%p,%p)\n", iface, val);
-	return E_NOTIMPL;
+	TextChunk *This = impl_from_ITextChunk(iface);
+
+	WINE_TRACE("(%p,%p)\n", iface, val);
+
+	if (val)
+		ITextContext_AddRef(val);
+	if (This->context)
+		ITextContext_Release(This->context);
+	This->context = val;
+
+	return S_OK;
 }
 
 static HRESULT WINAPI TextChunk_put_Locale(ITextChunk *iface, LCID val)
@@ -356,6 +376,7 @@ static HRESULT TextChunk_Create(REFIID iid, void** ppv)
 	if (!This) return E_OUTOFMEMORY;
 	This->ITextChunk_iface.lpVtbl = (ITextChunkVtbl*)&TextChunk_Vtbl;
 	This->ref = 1;
+	This->context = NULL;
 
 	res = TextChunk_QueryInterface(&This->ITextChunk_iface, iid, ppv);
 	TextChunk_Release(&This->ITextChunk_iface);
