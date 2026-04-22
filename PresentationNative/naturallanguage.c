@@ -17,6 +17,191 @@ void NlUnload(void)
 {
 }
 
+// IEnumVARIANT
+typedef struct EnumVariant {
+	IEnumVARIANT IEnumVARIANT_iface;
+	LONG ref;
+	VARIANT *contents;
+	ULONG count;
+	ULONG cursor;
+} EnumVariant;
+
+static inline EnumVariant *impl_from_IEnumVARIANT(IEnumVARIANT *iface)
+{
+	return CONTAINING_RECORD(iface, EnumVariant, IEnumVARIANT_iface);
+}
+
+static HRESULT WINAPI EnumVariant_QueryInterface(IEnumVARIANT *iface, REFIID iid, void** ppv)
+{
+	EnumVariant *This = impl_from_IEnumVARIANT(iface);
+	WINE_TRACE("(%p,%s,%p)\n", iface, debugstr_guid(iid), ppv);
+
+	if (IsEqualIID(&IID_IUnknown, iid) ||
+		IsEqualIID(&IID_IEnumVARIANT, iid))
+	{
+		*ppv = &This->IEnumVARIANT_iface;
+	}
+	else
+	{
+		*ppv = NULL;
+		return E_NOINTERFACE;
+	}
+	IUnknown_AddRef((IUnknown*)*ppv);
+	return S_OK;
+}
+
+static ULONG WINAPI EnumVariant_AddRef(IEnumVARIANT *iface)
+{
+	EnumVariant *This = impl_from_IEnumVARIANT(iface);
+	ULONG ref = InterlockedIncrement(&This->ref);
+
+	WINE_TRACE("(%p) refcount=%lu\n", iface, ref);
+
+	return ref;
+}
+
+static ULONG WINAPI EnumVariant_Release(IEnumVARIANT *iface)
+{
+	EnumVariant *This = impl_from_IEnumVARIANT(iface);
+	ULONG ref = InterlockedDecrement(&This->ref);
+
+	WINE_TRACE("(%p) refcount=%lu\n", iface, ref);
+
+	if (ref == 0)
+	{
+		int i;
+
+		for (i=0; i < This->count; i++)
+			VariantClear(&This->contents[i]);
+
+		free(This->contents);
+		free(This);
+	}
+
+	return ref;
+}
+
+static HRESULT WINAPI EnumVariant_Next(IEnumVARIANT *iface, ULONG celt, VARIANT *rgVar, ULONG *pCeltFetched)
+{
+	EnumVariant *This = impl_from_IEnumVARIANT(iface);
+	HRESULT hr = S_OK;
+
+	WINE_TRACE("(%p,%lu,%p,%p)\n", iface, celt, rgVar, pCeltFetched);
+
+	*pCeltFetched = 0;
+
+	while (*pCeltFetched < celt && This->cursor < This->count && SUCCEEDED(hr))
+	{
+		hr = VariantCopy(&rgVar[*pCeltFetched], &This->contents[This->cursor]);
+		if (SUCCEEDED(hr))
+		{
+			(*pCeltFetched)++;
+			This->cursor++;
+		}
+	}
+
+	if (FAILED(hr))
+	{
+		This->cursor -= *pCeltFetched;
+		while (*pCeltFetched)
+			VariantClear(&rgVar[--*pCeltFetched]);
+	}
+	else
+		hr = *pCeltFetched == celt ? S_OK : S_FALSE;
+
+	return hr;
+}
+
+static HRESULT WINAPI EnumVariant_Skip(IEnumVARIANT *iface, ULONG celt)
+{
+	EnumVariant *This = impl_from_IEnumVARIANT(iface);
+
+	WINE_TRACE("(%p,%lu)\n", iface, celt);
+
+	if (This->count - This->cursor >= celt)
+	{
+		This->cursor += celt;
+		return S_OK;
+	}
+	else
+	{
+		This->cursor = This->count;
+		return S_FALSE;
+	}
+}
+
+static HRESULT WINAPI EnumVariant_Reset(IEnumVARIANT *iface)
+{
+	EnumVariant *This = impl_from_IEnumVARIANT(iface);
+
+	WINE_TRACE("(%p)\n", iface);
+
+	This->cursor = 0;
+	return S_OK;
+}
+
+static HRESULT EnumVariant_Create(VARIANT *contents, ULONG count, ULONG cursor, IEnumVARIANT **result);
+
+static HRESULT WINAPI EnumVariant_Clone(IEnumVARIANT *iface, IEnumVARIANT **result)
+{
+	EnumVariant *This = impl_from_IEnumVARIANT(iface);
+
+	WINE_TRACE("(%p)\n", iface);
+
+	return EnumVariant_Create(This->contents, This->count, This->cursor, result);
+}
+
+static const IEnumVARIANTVtbl EnumVariant_Vtbl = {
+	EnumVariant_QueryInterface,
+	EnumVariant_AddRef,
+	EnumVariant_Release,
+	EnumVariant_Next,
+	EnumVariant_Skip,
+	EnumVariant_Reset,
+	EnumVariant_Clone
+};
+
+static HRESULT EnumVariant_Create(VARIANT *contents, ULONG count, ULONG cursor, IEnumVARIANT **result)
+{
+	EnumVariant *This;
+	HRESULT hr = S_OK;
+	int i;
+
+	*result = NULL;
+
+	This = malloc(sizeof(*This));
+	if (!This) return E_OUTOFMEMORY;
+	This->IEnumVARIANT_iface.lpVtbl = (IEnumVARIANTVtbl*)&EnumVariant_Vtbl;
+	if (count)
+	{
+		This->contents = calloc(count, sizeof(VARIANT));
+		if (!This->contents)
+		{
+			free(This);
+			return E_OUTOFMEMORY;
+		}
+	}
+	else
+		This->contents = NULL;
+	This->count = count;
+	This->cursor = cursor;
+	This->ref = 1;
+
+	for (i=0; i < count && SUCCEEDED(hr); i++)
+	{
+		hr = VariantCopy(&This->contents[i], &contents[i]);
+	}
+
+	if (FAILED(hr))
+	{
+		IEnumVARIANT_Release(&This->IEnumVARIANT_iface);
+		return hr;
+	}
+
+	*result = &This->IEnumVARIANT_iface;
+	return S_OK;
+}
+
 // ITextContext
 typedef struct TextContext {
 	ITextContext ITextContext_iface;
@@ -373,10 +558,10 @@ static HRESULT WINAPI TextChunk_put_Locale(ITextChunk *iface, LCID val)
 	return S_OK;
 }
 
-static HRESULT WINAPI TextChunk_GetEnumerator(ITextChunk *iface, IEnumVARIANT **ppSent)
+static HRESULT WINAPI TextChunk_GetEnumerator(ITextChunk *iface, IEnumVARIANT **sentences)
 {
-	WINE_FIXME("(%p,%p)\n", iface, ppSent);
-	return E_NOTIMPL;
+	WINE_FIXME("(%p,%p)\n", iface, sentences);
+	return EnumVariant_Create(NULL, 0, 0, sentences);
 }
 
 static HRESULT WINAPI TextChunk_get_ReuseObjects(ITextChunk *iface, VARIANT_BOOL *pval)

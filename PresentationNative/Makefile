@@ -21,4 +21,4 @@ naturallanguage.o: $(SRCDIR)/naturallanguage.c naturallanguage.h $(SRCDIR)/../wi
 	$(MINGW)-gcc -o $@ $(CFLAGS) -D_WIN32_WINNT=0x0602 -D__WINESRC__ --std=c99 -c -Wall -Wno-format -Werror -I$(SRCDIR)/.. -I. $<
 
 PresentationNative_cor3.dll: $(C_SRCS:%.c=%.o) debug.o
-	$(MINGW)-gcc -o $@ $(LDFLAGS) -shared -Wl,--kill-at $(C_SRCS:%.c=%.o) debug.o -luuid -lgdi32
+	$(MINGW)-gcc -o $@ $(LDFLAGS) -shared -Wl,--kill-at $(C_SRCS:%.c=%.o) debug.o -luuid -lgdi32 -loleaut32
