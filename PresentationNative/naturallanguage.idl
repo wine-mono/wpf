@@ -3,9 +3,79 @@ import "unknwn.idl";
 import "oaidl.idl";
 
 cpp_quote("DEFINE_GUID(CLSID_ITextChunk, 0x89ea5b5a,0xd01c,0x4560,0xa8,0x74,0x9f,0xc9,0x2a,0xfb,0x0e,0xfa);")
+cpp_quote("DEFINE_GUID(CLSID_ITextContext, 0x333e6924,0x4353,0x4934,0xa7,0xbe,0x5f,0xb5,0xbd,0xdd,0xb2,0xd6);")
 
+interface ILexicon;
+interface IProcessingOptions;
 interface ISentence;
-interface ITextContext;
+
+[
+	object,
+	uuid(b6797cc0-11ae-4047-a438-26c0c916eb8d)
+]
+interface ITextContext : IUnknown
+{
+	HRESULT stub_get_PropertyCount();
+	HRESULT stub_get_Property();
+	HRESULT stub_put_Property();
+	HRESULT stub_get_DefaultDialectCount();
+	HRESULT stub_get_DefaultDialect();
+	HRESULT stub_AddDefaultDialect();
+	HRESULT stub_RemoveDefaultDialect();
+	[propget] HRESULT LexiconCount([retval, out] long *pval);
+	[propget] HRESULT Lexicon(long index, [retval, out] ILexicon **pval);
+	HRESULT AddLexicon(ILexicon *pLexicon);
+	HRESULT RemoveLexicon(ILexicon *pLexicon);
+	HRESULT stub_get_Version();
+	HRESULT stub_get_ResourceLoader();
+	HRESULT stub_put_ResourceLoader();
+	[propget] HRESULT Options([retval, out] IProcessingOptions **pval);
+	[propget] HRESULT Capabilities(LCID locale, [retval, out] IProcessingOptions **pval);
+	HRESULT stub_get_Lexicons();
+	HRESULT stub_put_Lexicons();
+	HRESULT stub_get_MaxSentences();
+	HRESULT stub_put_MaxSentences();
+	HRESULT stub_get_IsSingleLanguage();
+	HRESULT stub_put_IsSingleLanguage();
+	HRESULT stub_get_IsSimpleWordBreaking();
+	HRESULT stub_put_IsSimpleWordBreaking();
+	HRESULT stub_get_UseRelativeTimes();
+	HRESULT stub_put_UseRelativeTimes();
+	HRESULT stub_get_IgnorePunctuation();
+	HRESULT stub_put_IgnorePunctuation();
+	HRESULT stub_get_IsCaching();
+	HRESULT stub_put_IsCaching();
+	HRESULT stub_get_IsShowingGaps();
+	HRESULT stub_put_IsShowingGaps();
+	HRESULT stub_get_IsShowingCharacterNormalizations();
+	HRESULT stub_put_IsShowingCharacterNormalizations();
+	HRESULT stub_get_IsShowingWordNormalizations();
+	HRESULT stub_put_IsShowingWordNormalizations();
+	HRESULT stub_get_IsComputingCompounds();
+	HRESULT stub_put_IsComputingCompounds();
+	HRESULT stub_get_IsComputingInflections();
+	HRESULT stub_put_IsComputingInflections();
+	HRESULT stub_get_IsComputingLemmas();
+	HRESULT stub_put_IsComputingLemmas();
+	HRESULT stub_get_IsComputingExpansions();
+	HRESULT stub_put_IsComputingExpansions();
+	HRESULT stub_get_IsComputingBases();
+	HRESULT stub_put_IsComputingBases();
+	HRESULT stub_get_IsComputingPartOfSpeechTags();
+	HRESULT stub_put_IsComputingPartOfSpeechTags();
+	HRESULT stub_get_IsFindingDefinitions();
+	HRESULT stub_put_IsFindingDefinitions();
+	HRESULT stub_get_IsFindingDateTimeMeasures();
+	HRESULT stub_put_IsFindingDateTimeMeasures();
+	HRESULT stub_get_IsFindingPersons();
+	HRESULT stub_put_IsFindingPersons();
+	HRESULT stub_get_IsFindingLocations();
+	HRESULT stub_put_IsFindingLocations();
+	HRESULT stub_get_IsFindingOrganizations();
+	HRESULT stub_put_IsFindingOrganizations();
+	HRESULT stub_get_IsFindingPhrases();
+	HRESULT stub_put_IsFindingPhrases();
+}
 
 [
 	object,

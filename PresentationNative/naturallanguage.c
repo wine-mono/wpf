@@ -17,6 +17,183 @@ void NlUnload(void)
 {
 }
 
+// ITextContext
+typedef struct TextContext {
+	ITextContext ITextContext_iface;
+	LONG ref;
+} TextContext;
+
+static inline TextContext *impl_from_ITextContext(ITextContext *iface)
+{
+	return CONTAINING_RECORD(iface, TextContext, ITextContext_iface);
+}
+
+static HRESULT WINAPI TextContext_QueryInterface(ITextContext *iface, REFIID iid, void** ppv)
+{
+	TextContext *This = impl_from_ITextContext(iface);
+	WINE_TRACE("(%p,%s,%p)\n", iface, debugstr_guid(iid), ppv);
+
+	if (IsEqualIID(&IID_IUnknown, iid) ||
+		IsEqualIID(&IID_ITextContext, iid))
+	{
+		*ppv = &This->ITextContext_iface;
+	}
+	else
+	{
+		*ppv = NULL;
+		return E_NOINTERFACE;
+	}
+	IUnknown_AddRef((IUnknown*)*ppv);
+	return S_OK;
+}
+
+static ULONG WINAPI TextContext_AddRef(ITextContext *iface)
+{
+	TextContext *This = impl_from_ITextContext(iface);
+	ULONG ref = InterlockedIncrement(&This->ref);
+
+	WINE_TRACE("(%p) refcount=%lu\n", iface, ref);
+
+	return ref;
+}
+
+static ULONG WINAPI TextContext_Release(ITextContext *iface)
+{
+	TextContext *This = impl_from_ITextContext(iface);
+	ULONG ref = InterlockedDecrement(&This->ref);
+
+	WINE_TRACE("(%p) refcount=%lu\n", iface, ref);
+
+	if (ref == 0)
+		free(This);
+
+	return ref;
+}
+
+static HRESULT WINAPI TextContext_ComStub(ITextContext *This)
+{
+	// Should never be called
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextContext_get_LexiconCount(ITextContext *iface, long *pval)
+{
+	WINE_FIXME("(%p,%p)\n", iface, pval);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextContext_get_Lexicon(ITextContext *iface, long index, ILexicon **pval)
+{
+	WINE_FIXME("(%p,%li,%p)\n", iface, index, pval);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextContext_AddLexicon(ITextContext *iface, ILexicon *pLexicon)
+{
+	WINE_FIXME("(%p,%p)\n", iface, pLexicon);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextContext_RemoveLexicon(ITextContext *iface, ILexicon *pLexicon)
+{
+	WINE_FIXME("(%p,%p)\n", iface, pLexicon);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextContext_get_Options(ITextContext *iface, IProcessingOptions **pval)
+{
+	WINE_FIXME("(%p,%p)\n", iface, pval);
+	return E_NOTIMPL;
+}
+
+static HRESULT WINAPI TextContext_get_Capabilities(ITextContext *iface, LCID locale, IProcessingOptions **pval)
+{
+	WINE_FIXME("(%p,%lu,%p)\n", iface, locale, pval);
+	return E_NOTIMPL;
+}
+
+static const ITextContextVtbl TextContext_Vtbl = {
+	TextContext_QueryInterface,
+	TextContext_AddRef,
+	TextContext_Release,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_get_LexiconCount,
+	TextContext_get_Lexicon,
+	TextContext_AddLexicon,
+	TextContext_RemoveLexicon,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_get_Options,
+	TextContext_get_Capabilities,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub,
+	TextContext_ComStub
+};
+
+static HRESULT TextContext_Create(REFIID iid, void** ppv)
+{
+	TextContext *This;
+	HRESULT res;
+
+	This = malloc(sizeof(*This));
+	if (!This) return E_OUTOFMEMORY;
+	This->ITextContext_iface.lpVtbl = (ITextContextVtbl*)&TextContext_Vtbl;
+	This->ref = 1;
+
+	res = TextContext_QueryInterface(&This->ITextContext_iface, iid, ppv);
+	TextContext_Release(&This->ITextContext_iface);
+
+	return res;
+}
+
 // ITextChunk
 typedef struct TextChunk {
 	ITextChunk ITextChunk_iface;
@@ -190,6 +367,9 @@ HRESULT NlGetClassObject(REFCLSID clsid, REFIID iid, void** ppv)
 {
 	if (IsEqualGUID(&CLSID_ITextChunk, clsid)) {
 		return TextChunk_Create(iid, ppv);
+	}
+	if (IsEqualGUID(&CLSID_ITextContext, clsid)) {
+		return TextContext_Create(iid, ppv);
 	}
 	WINE_FIXME("%s %s\n", wine_dbgstr_guid(clsid), wine_dbgstr_guid(iid));
 	return E_NOTIMPL;
