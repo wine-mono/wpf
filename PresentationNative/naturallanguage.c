@@ -20,12 +20,18 @@ void NlUnload(void)
 // ITextContext
 typedef struct TextContext {
 	ITextContext ITextContext_iface;
+	IProcessingOptions IProcessingOptions_iface;
 	LONG ref;
 } TextContext;
 
 static inline TextContext *impl_from_ITextContext(ITextContext *iface)
 {
 	return CONTAINING_RECORD(iface, TextContext, ITextContext_iface);
+}
+
+static inline TextContext *impl_from_IProcessingOptions(IProcessingOptions *iface)
+{
+	return CONTAINING_RECORD(iface, TextContext, IProcessingOptions_iface);
 }
 
 static HRESULT WINAPI TextContext_QueryInterface(ITextContext *iface, REFIID iid, void** ppv)
@@ -37,6 +43,10 @@ static HRESULT WINAPI TextContext_QueryInterface(ITextContext *iface, REFIID iid
 		IsEqualIID(&IID_ITextContext, iid))
 	{
 		*ppv = &This->ITextContext_iface;
+	}
+	else if (IsEqualIID(&IID_IProcessingOptions, iid))
+	{
+		*ppv = &This->IProcessingOptions_iface;
 	}
 	else
 	{
@@ -102,8 +112,9 @@ static HRESULT WINAPI TextContext_RemoveLexicon(ITextContext *iface, ILexicon *p
 
 static HRESULT WINAPI TextContext_get_Options(ITextContext *iface, IProcessingOptions **pval)
 {
-	WINE_FIXME("(%p,%p)\n", iface, pval);
-	return E_NOTIMPL;
+	WINE_TRACE("(%p,%p)\n", iface, pval);
+
+	return ITextContext_QueryInterface(iface, &IID_IProcessingOptions, (void**)pval);
 }
 
 static HRESULT WINAPI TextContext_get_Capabilities(ITextContext *iface, LCID locale, IProcessingOptions **pval)
@@ -178,6 +189,51 @@ static const ITextContextVtbl TextContext_Vtbl = {
 	TextContext_ComStub
 };
 
+static HRESULT WINAPI TextContext_options_QueryInterface(IProcessingOptions *iface, REFIID iid, void** ppv)
+{
+	TextContext *This = impl_from_IProcessingOptions(iface);
+	return ITextContext_QueryInterface(&This->ITextContext_iface, iid, ppv);
+}
+
+static ULONG WINAPI TextContext_options_AddRef(IProcessingOptions *iface)
+{
+	TextContext *This = impl_from_IProcessingOptions(iface);
+	return ITextContext_AddRef(&This->ITextContext_iface);
+}
+
+static ULONG WINAPI TextContext_options_Release(IProcessingOptions *iface)
+{
+	TextContext *This = impl_from_IProcessingOptions(iface);
+	return ITextContext_Release(&This->ITextContext_iface);
+}
+
+static HRESULT WINAPI TextContext_options_ComStub(IProcessingOptions *This)
+{
+	// Should never be called
+	return E_NOTIMPL;
+}
+
+
+static HRESULT WINAPI TextContext_options_put_Item(IProcessingOptions *iface, VARIANT index, VARIANT val)
+{
+	WINE_FIXME("(%p,%s,%s)\n", iface, wine_dbgstr_variant(&index), wine_dbgstr_variant(&val));
+	return S_OK;
+}
+
+static const IProcessingOptionsVtbl TextContext_options_Vtbl = {
+	TextContext_options_QueryInterface,
+	TextContext_options_AddRef,
+	TextContext_options_Release,
+	TextContext_options_ComStub,
+	TextContext_options_ComStub,
+	TextContext_options_ComStub,
+	TextContext_options_ComStub,
+	TextContext_options_ComStub,
+	TextContext_options_ComStub,
+	TextContext_options_put_Item,
+	TextContext_options_ComStub
+};
+
 static HRESULT TextContext_Create(REFIID iid, void** ppv)
 {
 	TextContext *This;
@@ -186,6 +242,7 @@ static HRESULT TextContext_Create(REFIID iid, void** ppv)
 	This = malloc(sizeof(*This));
 	if (!This) return E_OUTOFMEMORY;
 	This->ITextContext_iface.lpVtbl = (ITextContextVtbl*)&TextContext_Vtbl;
+	This->IProcessingOptions_iface.lpVtbl = (IProcessingOptionsVtbl*)&TextContext_options_Vtbl;
 	This->ref = 1;
 
 	res = TextContext_QueryInterface(&This->ITextContext_iface, iid, ppv);

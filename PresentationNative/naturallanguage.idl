@@ -6,8 +6,23 @@ cpp_quote("DEFINE_GUID(CLSID_ITextChunk, 0x89ea5b5a,0xd01c,0x4560,0xa8,0x74,0x9f
 cpp_quote("DEFINE_GUID(CLSID_ITextContext, 0x333e6924,0x4353,0x4934,0xa7,0xbe,0x5f,0xb5,0xbd,0xdd,0xb2,0xd6);")
 
 interface ILexicon;
-interface IProcessingOptions;
 interface ISentence;
+
+[
+	object,
+	uuid(c090356b-a6a5-442a-a204-cfd5415b5902)
+]
+interface IProcessingOptions : IUnknown
+{
+	HRESULT stub_get__NewEnum();
+	HRESULT stub_GetEnumerator();
+	HRESULT stub_get_Locale();
+	HRESULT stub_get_Count();
+	HRESULT stub_get_Name();
+	HRESULT stub_get_Item();
+	[propput] HRESULT Item([in] VARIANT index, [in] VARIANT val);
+	HRESULT stub_get_IsReadOnly();
+}
 
 [
 	object,
