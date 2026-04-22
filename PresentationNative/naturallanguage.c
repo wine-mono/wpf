@@ -370,7 +370,7 @@ static HRESULT WINAPI TextChunk_put_Context(ITextChunk *iface, ITextContext *val
 static HRESULT WINAPI TextChunk_put_Locale(ITextChunk *iface, LCID val)
 {
 	WINE_FIXME("(%p,%lu)\n", iface, val);
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 static HRESULT WINAPI TextChunk_GetEnumerator(ITextChunk *iface, IEnumVARIANT **ppSent)
