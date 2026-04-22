@@ -319,7 +319,7 @@ static HRESULT WINAPI TextChunk_ComStub(ITextChunk *This)
 static HRESULT WINAPI TextChunk_SetInputArray(ITextChunk *iface, LPCWSTR str, LONG size)
 {
 	WINE_FIXME("(%p,%s,%li)\n", iface, debugstr_w(str), size);
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 static HRESULT WINAPI TextChunk_get_Count(ITextChunk *iface, LONG *val)
