@@ -15,7 +15,7 @@ debug.o: $(SRCDIR)/../wine/debug.c $(SRCDIR)/../wine/debug.h $(SRCDIR)/../wine/h
 	$(MINGW)-gcc -o $@ $(CFLAGS) -D_WIN32_WINNT=0x0602 -D__WINESRC__ --std=c99 -c -Wall -Wno-format -Werror -I$(SRCDIR)/.. $<
 
 naturallanguage.h: $(SRCDIR)/naturallanguage.idl
-	widl -h $<
+	widl -o $@ -h $<
 
 naturallanguage.o: $(SRCDIR)/naturallanguage.c naturallanguage.h $(SRCDIR)/../wine/debug.h
 	$(MINGW)-gcc -o $@ $(CFLAGS) -D_WIN32_WINNT=0x0602 -D__WINESRC__ --std=c99 -c -Wall -Wno-format -Werror -I$(SRCDIR)/.. -I. $<
