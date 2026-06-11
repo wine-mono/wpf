@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Printing;
 using System.IO;
+using System.Runtime.InteropServices;
 
 using System.Windows;
 using System.Windows.Media;
@@ -126,9 +127,80 @@ namespace MS.Internal
         // write a metafile stream to the output stream in PNG format
         internal override void SaveMetafileToImageStream(MemoryStream metafileStream, Stream imageStream)
         {
-            Metafile metafile = new Metafile(metafileStream);
-            metafile.Save(imageStream, ImageFormat.Png);
+            Metafile metafile = null;
+            try
+            {
+                metafile = new Metafile(metafileStream);
+            }
+            catch
+            {
+                metafile = LoadRawWmfAsEnhancedMetafile(metafileStream);
+                if (metafile == null)
+                {
+                    throw;
+                }
+            }
+
+            try
+            {
+                int width = metafile.Width;
+                int height = metafile.Height;
+
+                if (width <= 0 || height <= 0)
+                {
+                    System.Drawing.Size sz = metafile.Size;
+                    width = sz.Width;
+                    height = sz.Height;
+                }
+
+                if (width <= 0) width = 1;
+                if (height <= 0) height = 1;
+
+                const int maxDim = 2048;
+                if (width > maxDim || height > maxDim)
+                {
+                    double scale = (double)maxDim / Math.Max(width, height);
+                    width = Math.Max(1, (int)(width * scale));
+                    height = Math.Max(1, (int)(height * scale));
+                }
+
+                using (Bitmap bmp = new Bitmap(width, height))
+                {
+                    using (Graphics g = Graphics.FromImage(bmp))
+                    {
+                        g.Clear(System.Drawing.Color.Transparent);
+                        g.DrawImage(metafile, 0, 0, width, height);
+                    }
+                    bmp.Save(imageStream, ImageFormat.Png);
+                }
+            }
+            finally
+            {
+                metafile.Dispose();
+            }
         }
+
+        // convert a raw WMF stream to an enhanced Metafile
+        // Returns null on failure
+        private static Metafile LoadRawWmfAsEnhancedMetafile(MemoryStream wmfStream)
+        {
+            byte[] bits = wmfStream.ToArray();
+            if (bits == null || bits.Length == 0)
+            {
+                return null;
+            }
+
+            IntPtr hemf = SetWinMetaFileBits((uint)bits.Length, bits, IntPtr.Zero, IntPtr.Zero);
+            if (hemf == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            return new Metafile(hemf, true);
+        }
+
+        [DllImport("gdi32.dll", SetLastError = true)]
+        private static extern IntPtr SetWinMetaFileBits(uint cbBuffer, byte[] lpbBuffer, IntPtr hdcRef, IntPtr lpmfp);
 
         // Get a bitmap from the given data (either BitmapSource or Bitmap)
         private static Bitmap GetBitmapImpl(object data)
