@@ -15,7 +15,7 @@
 
 #include "precomp.hpp"
 
-#if !defined(_ARM_) && !defined(_ARM64_)
+#if !defined(_ARM_) && !defined(_ARM64_) && !defined(__arm64ec__)
 #include "xmmintrin.h"
 #elif defined (_ARM64_) 
 #include "arm_neon.h"

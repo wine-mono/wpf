@@ -577,7 +577,7 @@ CFloatFPU::Floor(float x)
         ? SmallFloor(x)
         : LargeFloor(x);
 
-#elif defined(_AMD64_)
+#elif defined(_AMD64_) && !defined(__arm64ec__)
     __m128 given = _mm_set_ss(x);                       // load given value to xmm register
     __int32 result = _mm_cvtss_si32(given);             // convert it to integer (rounding mode doesn't matter)
     __m128 rounded = _mm_cvtsi32_ss(given, result);     // convert back to float
@@ -640,7 +640,7 @@ CFloatFPU::Ceiling(float x)
         ? SmallCeiling(x)
         : LargeCeiling(x);
 
-#elif defined(_AMD64_)
+#elif defined(_AMD64_) && !defined(__arm64ec__)
     __m128 given = _mm_set_ss(x);                       // load given value to xmm register
     __int32 result = _mm_cvtss_si32(given);             // convert it to integer (rounding mode doesn't matter)
     __m128 rounded = _mm_cvtsi32_ss(given, result);     // convert back to float

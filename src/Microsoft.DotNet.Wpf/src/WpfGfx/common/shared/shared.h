@@ -10,7 +10,7 @@
 #include <mmsystem.h>
 // winnt.h and the VC8 emmintrin.h define this function differently, and compilation fails.
 #define _mm_clflush _mm_clflush__dupe_renamed
-#if !defined(_ARM_) && !defined(_ARM64_)
+#if !defined(_ARM_) && !defined(_ARM64_) && !defined(__arm64ec__)
 #include <emmintrin.h>
 #endif
 #pragma warning (pop)

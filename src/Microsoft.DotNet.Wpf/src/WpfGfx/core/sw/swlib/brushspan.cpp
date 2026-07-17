@@ -893,7 +893,7 @@ FASTCALL ColorSource_RadialGradient_32bppPARGB(
             (ARGB*) pSOP->m_pvDest
             );
     }
-#elif defined(_AMD64_)
+#elif defined(_AMD64_) && !defined(__arm64ec__)
     pColorSource->GenerateColors<CXmmFloat>(
         pPP->m_iX,
         pPP->m_iY,

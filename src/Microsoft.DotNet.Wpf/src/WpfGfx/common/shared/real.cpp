@@ -581,7 +581,7 @@ int CFloatFPU::LargeRound(float x)
         return RoundWithHalvesUp(x);
     }
     
-#elif defined(_AMD64_)
+#elif defined(_AMD64_) && !defined(__arm64ec__)
     __m128 given = _mm_set_ss(x);                       // load given value
     __int32 result = _mm_cvtss_si32(given);             // convert it to integer (rounding mode doesn't matter)
     __m128 rounded = _mm_cvtsi32_ss(given, result);     // convert back to float

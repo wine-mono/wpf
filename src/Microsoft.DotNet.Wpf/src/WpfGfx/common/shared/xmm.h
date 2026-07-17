@@ -17,7 +17,7 @@
 
 #if defined(_X86_)
 #define _BUILD_SSE_
-#elif defined(_AMD64_)
+#elif defined(_AMD64_) && !defined(__arm64ec__)
 #define _BUILD_SSE_
 #endif
 
