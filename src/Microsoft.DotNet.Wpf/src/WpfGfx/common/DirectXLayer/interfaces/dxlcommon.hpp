@@ -26,6 +26,8 @@
 #include "instrumentation.h"
 #endif
 
+#include <exception>
+
 #include <string>
 
 

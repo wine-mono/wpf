@@ -38,6 +38,8 @@
 
 #include "strsafe.h"
 
+#include <cstdlib>
+
 // debug output, allocator, etc.
 
 #include "common\common.h"
